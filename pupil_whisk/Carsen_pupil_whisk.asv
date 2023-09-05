@@ -1,0 +1,51 @@
+%% make file list from exported .mat files in single directory
+testfiledir = uigetdir();
+matfiles = dir(fullfile(testfiledir, '*.mat'));
+nfiles = length(matfiles);
+
+%% loops for pupil and whisking
+for w = 1 : nfiles
+    fid = fullfile(testfiledir, matfiles(w).name);
+    load(fid)
+    B = 1910-size(pupil_area,2);
+    C = zeros(1,B);
+    pupil_area = [pupil_area C];
+    whisk = [whisk C];
+    pupil(w,:) = pupil_area(1,:);
+    whiskall(w,:) = whisk(1,:);
+end
+figure
+pupilmean = mean(pupil,1,'omitnan');
+plot(pupilmean)
+figure
+whiskmean = mean(whiskall,1,'omitnan');
+plot(whiskmean)
+figure
+pupilsmooth = movmean(pupilmean,10,2,'omitnan');
+plot(pupilsmooth)
+figure
+whisksmooth = movmean(whiskmean,15,2,'omitnan');
+plot(whisksmooth)
+for w = 1 : nfiles
+    fid = fullfile(testfiledir, matfiles(w).name);
+    load(fid)
+    B = 1910-size(pupil_area,2);
+    C = zeros(1,B);
+    if isnan(pupil(w,1))
+    pupilBL = mean(pupil(w,1:900),1);
+    pupiln(w,:) = pupil(w,:)/pupilBL;
+    whiskBL = mean(whiskall(w,1:900),1);
+    whiskn(w,:) = whisk(w,:)/whiskBL;
+end
+figure
+pupilmeann = mean(pupiln,1,'omitnan');
+plot(pupilmeann)
+figure
+whiskmeann = mean(whiskn,1,'omitnan');
+plot(whiskmeann)
+figure
+pupilsmoothn = movmean(pupilmeann,10,2,'omitnan');
+plot(pupilsmoothn)
+figure
+whisksmoothn = movmean(whiskmeann,15,2,'omitnan');
+plot(whisksmoothn)
